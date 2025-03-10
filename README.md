@@ -1,2 +1,2 @@
 # pomodo
-An Pomodoro Timer built with electron 
+An Simple Pomodoro Timer built with electron 
