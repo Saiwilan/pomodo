@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      background: #1a1a1a;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      background: #1a1a1a;
+      padding: 30px;
+      
+      width: 320px;
+    }
+
+    .task-input {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .task-input input {
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      width: calc(106% - 40px);
+      font-size: 1rem;
+    }
+
+    .task-input button {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .task-display {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .circle-timer {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: auto;
+      padding-bottom: 25px;
+    }
+
+    svg circle {
+      fill: none;
+      stroke-width: 12;
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+
+    .bg-circle {
+      stroke: #333;
+    }
+
+    .progress-circle {
+      stroke: url(#grad1);
+      stroke-linecap: round;
+      stroke-dasharray: 690;
+      stroke-dashoffset: 690;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .timer-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5rem;
+      padding-bottom: 25px;
+      font-weight: bold;
+    }
+
+    .buttons button {
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #333;
+      padding: 10px 18px;
+      font-size: 1rem;
+      margin: 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .buttons button:hover {
+      background-color: #333;
+    }
+
+    .completed {
+      animation: glow 1s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { filter: drop-shadow(0 0 5px red); }
+      to { filter: drop-shadow(0 0 15px red); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="task-input">
+      <input type="text" id="taskInput" placeholder="Enter task name...">
+      <button id="taskAddBtn">✔</button>
+    </div>
+    <div class="task-display" id="taskDisplay"></div>
+
+    <div class="circle-timer">
+      <svg width="220" height="220">
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#ff4c4c; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#ff7777; stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <circle class="bg-circle" cx="110" cy="110" r="100"></circle>
+        <circle class="progress-circle" id="progressCircle" cx="110" cy="110" r="100"></circle>
+      </svg>
+      <div class="timer-text" id="timer-display">25:00</div>
+    </div>
+
+    <div class="buttons">
+      <button id="startStopBtn">Start</button>
+      <button id="resetBtn">Reset</button>
+      <button id="add25Btn">+25 min</button>
+    </div>
+  </div>
+
+  <script>
+    let timerDuration = 25 * 60;
+    let timer = timerDuration;
+    let interval = null;
+    let isRunning = false;
+
+    const display = document.getElementById("timer-display");
+    const startStopBtn = document.getElementById("startStopBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const add25Btn = document.getElementById("add25Btn");
+    const progressCircle = document.getElementById("progressCircle");
+    const taskInput = document.getElementById("taskInput");
+    const taskDisplay = document.getElementById("taskDisplay");
+    const taskAddBtn = document.getElementById("taskAddBtn");
+
+    const radius = 100;
+    const circleCircumference = 2 * Math.PI * radius;
+    progressCircle.style.strokeDasharray = circleCircumference;
+    progressCircle.style.strokeDashoffset = circleCircumference;
+
+    function formatTime(seconds) {
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateDisplay() {
+      display.textContent = formatTime(timer);
+      updateCircle();
+    }
+
+    function updateCircle() {
+      const percent = 1 - (timer / timerDuration);
+      progressCircle.style.strokeDashoffset = circleCircumference * (1 - percent);
+    }
+
+    function startTimer() {
+      if (!isRunning) {
+        interval = setInterval(() => {
+          if (timer > 0) {
+            timer--;
+            updateDisplay();
+          } else {
+            stopTimer();
+            progressCircle.classList.add('completed');
+            taskDisplay.textContent = "🎉 Task Completed!";
+          }
+        }, 1000);
+        startStopBtn.textContent = "Pause";
+        isRunning = true;
+      } else {
+        stopTimer();
+      }
+    }
+
+    function stopTimer() {
+      clearInterval(interval);
+      startStopBtn.textContent = "Start";
+      isRunning = false;
+    }
+
+    function resetTimer() {
+      stopTimer();
+      timer = timerDuration;
+      updateDisplay();
+      progressCircle.classList.remove('completed');
+      taskDisplay.textContent = taskInput.value.trim() ? taskInput.value.trim() : "";
+    }
+
+    function add25Minutes() {
+      timer += 25 * 60;
+      timerDuration += 25 * 60;
+      updateDisplay();
+    }
+
+    startStopBtn.addEventListener("click", startTimer);
+    resetBtn.addEventListener("click", resetTimer);
+    add25Btn.addEventListener("click", add25Minutes);
+
+    taskInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") registerTask();
+    });
+
+    taskAddBtn.addEventListener("click", registerTask);
+
+    function registerTask() {
+      const task = taskInput.value.trim();
+      if (task) {
+        taskDisplay.textContent = task;
+        taskInput.style.display = 'none';
+        taskAddBtn.style.display = 'none';
+      }
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>

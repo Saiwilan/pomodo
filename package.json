@@ -1,0 +1,12 @@
+{
+  "name": "pomodoro-timer",
+  "version": "1.0.0",
+  "description": "Minimalist Pomodoro Timer App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^29.0.0"
+  }
+}
